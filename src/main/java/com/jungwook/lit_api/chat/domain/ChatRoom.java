@@ -25,6 +25,9 @@ public class ChatRoom extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String category;
+
     @Builder.Default
     private String isGroupChat = "N";
 
