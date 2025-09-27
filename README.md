@@ -1,1 +1,0 @@
-# long-live-cafe-society-api
