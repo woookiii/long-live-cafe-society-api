@@ -1,0 +1,38 @@
+package com.jungwook.lit_api.chat.domain;
+
+import com.jungwook.lit_api.global.domain.BaseTimeEntity;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+public class ChatRoom extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Builder.Default
+    private String isGroupChat = "N";
+
+    private String imageUrl;
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+    private List<ChatParticipant> chatParticipants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+    private List<ChatMessage> chatMessages = new ArrayList<>();
+}
