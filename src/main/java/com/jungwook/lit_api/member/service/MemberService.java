@@ -9,16 +9,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
+    public MemberService(MemberRepository memberRepository, PasswordEncoder passwordEncoder) {
+        this.memberRepository = memberRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    public Member create(MemberSaveReqDto memberSaveReqDto) {
+
+    public UUID create(MemberSaveReqDto memberSaveReqDto) {
         Optional<Member> optionalMember = memberRepository.findByEmail(memberSaveReqDto.email());
         if(optionalMember.isPresent()) {
             throw new IllegalArgumentException("This email already exist.");
@@ -26,5 +31,9 @@ public class MemberService {
 
         String password = passwordEncoder.encode(memberSaveReqDto.password());
         Member member = memberRepository.save(memberSaveReqDto.toEntity(password));
+
+        return member.getId();
     }
+
+    public Member l
 }

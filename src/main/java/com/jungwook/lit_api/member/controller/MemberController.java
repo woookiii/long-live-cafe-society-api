@@ -11,15 +11,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/member")
 public class MemberController {
     private final MemberService memberService;
 
+    public MemberController(MemberService memberService) {
+        this.memberService = memberService;
+    }
+
     @PostMapping("/create")
     public ResponseEntity<?> memberCreate(@RequestBody MemberSaveReqDto memberSaveReqDto){
-        Member member = memberService.create(memberSaveReqDto);
-        return new ResponseEntity<>(member.getId(), HttpStatus.CREATED);
+        UUID memberId = memberService.create(memberSaveReqDto);
+        return new ResponseEntity<>(memberId, HttpStatus.CREATED);
     }
+
+    @PostMapping("/doLogin")
+    public ResponseEntity<?> doLogin(@RequestBody LoginDto dto)
 }
