@@ -1,6 +1,7 @@
 package com.jungwook.lit_api.member.service;
 
 import com.jungwook.lit_api.member.domain.Member;
+import com.jungwook.lit_api.member.dto.MemberLoginReqDto;
 import com.jungwook.lit_api.member.dto.MemberSaveReqDto;
 import com.jungwook.lit_api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +36,22 @@ public class MemberService {
         return member.getId();
     }
 
-    public Member l
+    public Member login(MemberLoginReqDto dto) {
+        boolean check = true;
+
+        Optional<Member> optionalMember = memberRepository.findByEmail(dto.email());
+        if(!optionalMember.isPresent()){
+            check = false;
+        }
+
+        if(!passwordEncoder.matches(dto.password(), optionalMember.get().getPassword())){
+            check = false;
+        }
+
+        if(!check){
+            throw new IllegalArgumentException("email or password is not correct");
+        }
+        return optionalMember.get();
+
+    }
 }
