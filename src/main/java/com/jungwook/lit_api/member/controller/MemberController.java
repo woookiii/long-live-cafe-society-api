@@ -65,14 +65,14 @@ public class MemberController {
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
         Map<String, Object> loginInfo = new HashMap<>();
-        loginInfo.put("id", member.getId());
+        loginInfo.put("name", member.getName());
         loginInfo.put("token", token);
 
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> generateNewAt(@CookieValue String refreshToken) {
+    public ResponseEntity<?> generateNewAt(@CookieValue(required = false) String refreshToken) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKeyRt)
                 .build()
@@ -90,5 +90,27 @@ public class MemberController {
         loginInfo.put("token", token);
 
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+    }
+
+    @PostMapping("/doLogout")
+    public ResponseEntity<?> doLogout(@CookieValue(required = false) String refreshToken, HttpServletResponse response) {
+        if (refreshToken != null) {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKeyRt)
+                    .build()
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
+            redisTemplate.delete(claims.getSubject());
+        }
+
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.addHeader("Set-Cookie", deleteCookie.toString());
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

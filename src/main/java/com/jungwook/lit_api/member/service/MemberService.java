@@ -52,6 +52,5 @@ public class MemberService {
             throw new IllegalArgumentException("email or password is not correct");
         }
         return optionalMember.get();
-
     }
 }
