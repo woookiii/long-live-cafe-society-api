@@ -51,10 +51,10 @@ public class MemberController {
     public ResponseEntity<?> doLogin(@RequestBody MemberLoginReqDto dto, HttpServletResponse response){
         Member member = memberService.login(dto);
         String token = jwtTokenProvider.createToken(member.getId().toString(), member.getRole().toString());
-        String refreshToken = jwtTokenProvider.createRefreshToken(member.getEmail(), member.getRole().toString());
+        String refreshToken = jwtTokenProvider.createRefreshToken(member.getId().toString(), member.getRole().toString());
 
         redisTemplate.opsForValue()//operation for value like String or Objects
-                .set(member.getEmail(), refreshToken, 200, TimeUnit.DAYS); //200 days ttl
+                .set(member.getId().toString(), refreshToken, 200, TimeUnit.DAYS); //200 days ttl
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
