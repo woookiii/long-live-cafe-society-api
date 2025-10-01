@@ -13,6 +13,10 @@ spring:
     hibernate:
       ddl-auto: create #when foreign key relationship is complicated, validate mode is recommended. update : maintain db data when restart app, so when first time we run app it should be create mode
     show_sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 jwt:
   expiration: 30
   secretKey: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
