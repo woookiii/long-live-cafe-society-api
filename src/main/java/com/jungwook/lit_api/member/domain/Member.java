@@ -1,6 +1,6 @@
 package com.jungwook.lit_api.member.domain;
 
-import com.jungwook.lit_api.global.domain.BaseTimeEntity;
+import com.jungwook.lit_api.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.jungwook.lit_api.global.domain;
+package com.jungwook.lit_api.common.domain;
 
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;

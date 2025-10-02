@@ -1,6 +1,6 @@
 package com.jungwook.lit_api.chat.domain;
 
-import com.jungwook.lit_api.global.domain.BaseTimeEntity;
+import com.jungwook.lit_api.common.domain.BaseTimeEntity;
 import com.jungwook.lit_api.member.domain.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,4 +33,7 @@ public class ChatMessage extends BaseTimeEntity {
 
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
+
+    @Builder.Default
+    private String isDeleted = "N";
 }

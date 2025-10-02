@@ -10,6 +10,13 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     volumes:
       - lit_data:/var/lib/mysql
+  redis:
+    image: redis:7.4.2
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
   lit_data:
+  redis_data:
