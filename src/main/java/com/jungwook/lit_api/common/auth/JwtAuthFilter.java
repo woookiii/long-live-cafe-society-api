@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 public class JwtAuthFilter extends GenericFilter {
     @Value("${jwt.secretKey}")
@@ -31,6 +33,9 @@ public class JwtAuthFilter extends GenericFilter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         String token = httpServletRequest.getHeader("Authorization");
+        log.info("start filter");
+
+        log.info("{}",token);
 
         try{
             if(token != null) {
@@ -44,6 +49,7 @@ public class JwtAuthFilter extends GenericFilter {
                         .build()
                         .parseClaimsJws(jwtToken)
                         .getBody();
+
 
                 List<GrantedAuthority> authorities = new ArrayList<>();
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));

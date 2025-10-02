@@ -89,6 +89,8 @@ public class MemberController {
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("token", token);
 
+        log.info("token refreshing success {}", token);
+
         return new ResponseEntity<>(loginInfo, HttpStatus.OK);
     }
 
