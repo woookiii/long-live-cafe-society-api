@@ -31,9 +31,6 @@ public class ChatMessage extends BaseTimeEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(columnDefinition = "TEXT")
-    private String imageUrl;
-
     @Builder.Default
     private String isDeleted = "N";
 }
