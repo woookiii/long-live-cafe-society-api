@@ -1,18 +1,25 @@
 package com.jungwook.lit_api.chat.service;
 
+import com.jungwook.lit_api.chat.domain.Category;
 import com.jungwook.lit_api.chat.domain.ChatMessage;
 import com.jungwook.lit_api.chat.domain.ChatParticipant;
 import com.jungwook.lit_api.chat.domain.ChatRoom;
 import com.jungwook.lit_api.chat.dto.ChatMessageDto;
+import com.jungwook.lit_api.chat.dto.ChatRoomListResDto;
+import com.jungwook.lit_api.chat.dto.CreateGroupRoomReqDto;
 import com.jungwook.lit_api.chat.repository.ChatMessageRepository;
 import com.jungwook.lit_api.chat.repository.ChatParticipantRepository;
 import com.jungwook.lit_api.chat.repository.ChatRoomRepository;
 import com.jungwook.lit_api.member.domain.Member;
 import com.jungwook.lit_api.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -61,5 +68,90 @@ public class ChatService {
         }
         return false;
 
+    }
+
+    public void createGroupRoom(CreateGroupRoomReqDto createGroupRoomReqDto) {
+        Member sender = memberRepository.findById(UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .orElseThrow(()->new EntityNotFoundException("Member cannot be found"));
+
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(createGroupRoomReqDto.roomName())
+                .description(createGroupRoomReqDto.description())
+                .category(Category.valueOf(createGroupRoomReqDto.category()))
+                .isGroupChat("Y")
+                .build();
+
+        chatRoomRepository.save(chatRoom);
+
+        ChatParticipant chatParticipant = ChatParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(sender)
+                .build();
+
+        chatParticipantRepository.save(chatParticipant);
+    }
+
+    public List<ChatRoomListResDto> getGroupChatRooms() {
+        List<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y");
+        List<ChatRoomListResDto> dtos = new ArrayList<>();
+        for(ChatRoom c : chatRooms) {
+            ChatRoomListResDto dto = ChatRoomListResDto.builder()
+                    .roomId(c.getId())
+                    .roomName(c.getName())
+                    .build();
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    public void addParticipantToGroupChat(UUID roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("room doesn't exist."));
+
+        Member member = memberRepository.findById(UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .orElseThrow(() -> new EntityNotFoundException("member doesn't exist"));
+
+        if(chatRoom.getIsGroupChat().equals("N")) {
+            throw new IllegalArgumentException("It is not group chat.");
+        }
+
+        Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member);
+        if(!participant.isPresent()) {
+            addParticipantToRoom(chatRoom, member);
+        }
+    }
+
+    private void addParticipantToRoom(ChatRoom chatRoom, Member member) {
+        ChatParticipant chatParticipant = ChatParticipant.builder()
+                .chatRoom(chatRoom)
+                .member(member)
+                .build();
+        chatParticipantRepository.save(chatParticipant);
+    }
+
+    public List<ChatMessageDto> getChatHistory(UUID roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                        .orElseThrow(() -> new EntityNotFoundException("Chat room does not exist."));
+
+        Member member = memberRepository.findById(UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .orElseThrow(() -> new EntityNotFoundException("Member does not exist"));
+
+        if(!isRoomParticipant(member.getId(), roomId)){
+            throw new IllegalArgumentException("You are not in this chat room");
+        }
+
+        List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedTimeAsc(chatRoom);
+        List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
+
+        for(ChatMessage c : chatMessages) {
+            ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+                    .senderId(c.getId())
+                    .message(c.getContent())
+                    .senderName(c.getMember().getName())
+                    .build();
+            chatMessageDtos.add(chatMessageDto);
+        }
+
+        return chatMessageDtos;
     }
 }

@@ -30,11 +30,10 @@ public class ChatRoom extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Category category;
 
+    private String description;
+
     @Builder.Default
     private String isGroupChat = "N";
-
-    @Column(columnDefinition = "TEXT")
-    private String imageUrl;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatParticipant> chatParticipants = new ArrayList<>();
