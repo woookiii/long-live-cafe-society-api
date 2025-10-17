@@ -30,7 +30,7 @@ public class StompController {
 
     @MessageMapping("/{roomId}")
     public void sendMessage(@DestinationVariable UUID roomId, ChatMessageDto chatMessageDto) throws JsonProcessingException {
-        log.info("{}", chatMessageDto.getMessage());
+        log.info("{}", chatMessageDto);
         chatService.saveMessage(roomId, chatMessageDto);
         chatMessageDto.setRoomId(roomId);
 

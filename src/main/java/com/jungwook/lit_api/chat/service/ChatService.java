@@ -13,8 +13,8 @@ import com.jungwook.lit_api.chat.repository.ChatRoomRepository;
 import com.jungwook.lit_api.member.domain.Member;
 import com.jungwook.lit_api.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class ChatService {
 
@@ -54,20 +55,22 @@ public class ChatService {
     }
 
     public boolean isRoomParticipant(UUID memberId, UUID roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new EntityNotFoundException("room cannot be found"));
 
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new EntityNotFoundException("room cannot be found"));
+//        Member member = memberRepository.findById(memberId)
+//                .orElseThrow(() -> new EntityNotFoundException("member cannot be found"));
+//
+//        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+//                .orElseThrow(() -> new EntityNotFoundException("room cannot be found"));
+//
+//        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+//        for (ChatParticipant c : chatParticipants) {
+//            if(c.getMember().equals(member)){
+//                return true;
+//            }
+//        }
+//        return false;
 
-        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
-        for (ChatParticipant c : chatParticipants) {
-            if(c.getMember().equals(member)){
-                return true;
-            }
-        }
-        return false;
-
+        return true;
     }
 
     public void createGroupRoom(CreateGroupRoomReqDto createGroupRoomReqDto) {
@@ -136,21 +139,25 @@ public class ChatService {
         Member member = memberRepository.findById(UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName()))
                 .orElseThrow(() -> new EntityNotFoundException("Member does not exist"));
 
-        if(!isRoomParticipant(member.getId(), roomId)){
-            throw new IllegalArgumentException("You are not in this chat room");
-        }
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);//refactor: chatRoom.getChatParticipants()
+
+        chatParticipants.stream()
+                .filter(c -> c.getMember().equals(member))
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("You are not in this chat room."));
 
         List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedTimeAsc(chatRoom);
         List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
 
         for(ChatMessage c : chatMessages) {
             ChatMessageDto chatMessageDto = ChatMessageDto.builder()
-                    .senderId(c.getId())
+                    .senderId(c.getMember().getId())
                     .message(c.getContent())
                     .senderName(c.getMember().getName())
                     .build();
             chatMessageDtos.add(chatMessageDto);
         }
+        log.info("return dtos");
 
         return chatMessageDtos;
     }

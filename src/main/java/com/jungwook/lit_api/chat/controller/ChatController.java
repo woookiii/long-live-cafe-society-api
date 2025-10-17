@@ -4,6 +4,7 @@ import com.jungwook.lit_api.chat.dto.ChatMessageDto;
 import com.jungwook.lit_api.chat.dto.ChatRoomListResDto;
 import com.jungwook.lit_api.chat.dto.CreateGroupRoomReqDto;
 import com.jungwook.lit_api.chat.service.ChatService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/chat")
 public class ChatController {
@@ -32,6 +34,7 @@ public class ChatController {
     //select group chat list
     @GetMapping("/room/group/list")
     public ResponseEntity<?> getGroupChatRooms() {
+        log.info("getGroupChatRooms request incoming");
         List<ChatRoomListResDto> chatRooms = chatService.getGroupChatRooms();
         return new ResponseEntity<>(chatRooms, HttpStatus.OK);
     }
@@ -46,7 +49,9 @@ public class ChatController {
     //select previous message
     @GetMapping("/history/{roomId}")
     public ResponseEntity<?> getChatHistory(@PathVariable UUID roomId) {
+        log.info("history req incoming");
         List<ChatMessageDto> chatMessageDtos = chatService.getChatHistory(roomId);
+        log.info("{}",chatMessageDtos);
         return new ResponseEntity<>(chatMessageDtos, HttpStatus.OK);
     }
 }

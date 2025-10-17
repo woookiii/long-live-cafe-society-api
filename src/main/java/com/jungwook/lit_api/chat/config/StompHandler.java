@@ -58,7 +58,11 @@ public class StompHandler implements ChannelInterceptor {
                     .getBody();
 
             UUID memberId = UUID.fromString(claims.getSubject());
+            log.info("{}", memberId);
+
             UUID roomId = UUID.fromString(accessor.getDestination().split("/")[2]);
+            log.info("{}", roomId);
+
             if(!chatService.isRoomParticipant(memberId, roomId)) {
                 throw new AuthenticationServiceException("You don't have an auth in this room");
             }
