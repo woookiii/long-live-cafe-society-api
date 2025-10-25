@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Ignore custom AWS config
+src/main/resources/aws-credentials.yml

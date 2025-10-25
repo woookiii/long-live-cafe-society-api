@@ -1,7 +1,7 @@
 package com.jungwook.lit_api.chat.domain;
 
 import com.jungwook.lit_api.common.domain.BaseTimeEntity;
-import com.jungwook.lit_api.member.domain.Role;
+import com.jungwook.lit_api.image.domain.Metadata;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,4 +40,7 @@ public class ChatRoom extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatMessage> chatMessages = new ArrayList<>();
+
+    @OneToOne(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+    private Metadata metadata;
 }

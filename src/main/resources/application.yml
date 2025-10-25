@@ -26,3 +26,8 @@ logging:
   level:
     org.springframework.web.socket: DEBUG
     org.springframework.messaging: DEBUG
+aws:
+  accessKey: ${AWS_ACCESS_KEY}
+  secretKey: ${AWS_SECRET_KEY}
+  region: ${AWS_REGION}
+  bucket: ${AWS_BUCKET}
