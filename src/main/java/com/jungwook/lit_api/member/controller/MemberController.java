@@ -65,6 +65,7 @@ public class MemberController {
         response.addHeader("Set-Cookie", refreshCookie.toString());
 
         Map<String, Object> loginInfo = new HashMap<>();
+        loginInfo.put("id", member.getId());
         loginInfo.put("name", member.getName());
         loginInfo.put("token", token);
 

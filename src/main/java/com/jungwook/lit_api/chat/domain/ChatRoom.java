@@ -1,6 +1,7 @@
 package com.jungwook.lit_api.chat.domain;
 
 import com.jungwook.lit_api.common.domain.BaseTimeEntity;
+import com.jungwook.lit_api.image.domain.Metadata;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,16 +27,20 @@ public class ChatRoom extends BaseTimeEntity {
     private String name;
 
     @Column(nullable = false)
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
+
+    private String description;
 
     @Builder.Default
     private String isGroupChat = "N";
-
-    private String imageUrl;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatParticipant> chatParticipants = new ArrayList<>();
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatMessage> chatMessages = new ArrayList<>();
+
+    @OneToOne(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
+    private Metadata metadata;
 }
