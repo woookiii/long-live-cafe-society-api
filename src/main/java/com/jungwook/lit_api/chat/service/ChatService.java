@@ -10,12 +10,14 @@ import com.jungwook.lit_api.chat.dto.CreateGroupRoomReqDto;
 import com.jungwook.lit_api.chat.repository.ChatMessageRepository;
 import com.jungwook.lit_api.chat.repository.ChatParticipantRepository;
 import com.jungwook.lit_api.chat.repository.ChatRoomRepository;
+import com.jungwook.lit_api.image.service.FileService;
 import com.jungwook.lit_api.member.domain.Member;
 import com.jungwook.lit_api.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.http.SdkHttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
 
-    public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, MemberRepository memberRepository) {
+    public ChatService(FileService fileService, ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, MemberRepository memberRepository) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatParticipantRepository = chatParticipantRepository;
         this.chatMessageRepository = chatMessageRepository;

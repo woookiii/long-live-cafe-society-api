@@ -1,8 +1,10 @@
 package com.jungwook.lit_api.image.service;
 
-import com.jungwook.lit_api.image.domain.AccessType;
+import com.jungwook.lit_api.chat.domain.ChatRoom;
+import com.jungwook.lit_api.chat.repository.ChatRoomRepository;
 import com.jungwook.lit_api.image.domain.Metadata;
 import com.jungwook.lit_api.image.repository.MetadataRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.http.SdkHttpMethod;
@@ -18,34 +20,38 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.text.Normalizer;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class FileService {
 
+    private final ChatRoomRepository chatRoomRepository;
     @Value("${aws.bucket}")
     private String bucketName;
 
     private final S3Presigner s3Presigner;
     private final MetadataRepository metadataRepository;
 
-    public FileService(S3Presigner s3Presigner, MetadataRepository metadataRepository) {
+    public FileService(S3Presigner s3Presigner, MetadataRepository metadataRepository, ChatRoomRepository chatRoomRepository) {
         this.s3Presigner = s3Presigner;
         this.metadataRepository = metadataRepository;
+        this.chatRoomRepository = chatRoomRepository;
     }
 
-    public String generatePresignedUrl(String filePath, SdkHttpMethod method, AccessType accessType) {
+    public String generatePresignedUrl(String filePath, SdkHttpMethod method, UUID chatRoomId) {
         if (method == SdkHttpMethod.GET) {
-            return generateGetPresignedUrl(filePath);
+            return generateGetPresignedUrl(chatRoomId);
         } else if (method == SdkHttpMethod.PUT) {
-            return generatePutPreSignedUrl(filePath, accessType);
+            return generatePutPreSignedUrl(filePath, chatRoomId);
         } else {
             throw new UnsupportedOperationException("Unsupported HTTP method: " + method);
         }
     }
 
-    private String generateGetPresignedUrl(String filePath) {
+    private String generateGetPresignedUrl(UUID chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new EntityNotFoundException("There is no such chat room."));
 
-        Optional<Metadata> metadata = metadataRepository.findByName(filePath);
+        Optional<Metadata> metadata = metadataRepository.findByChatRoom(chatRoom);
 
         if(metadata.isEmpty()){
             return "/images/logo.png";
@@ -53,7 +59,7 @@ public class FileService {
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(filePath)
+                .key(metadata.get().getName())
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -65,21 +71,21 @@ public class FileService {
         return presignedRequest.url().toString();
     }
 
-    private String generatePutPreSignedUrl(String filePath, AccessType accessType) {
+    private String generatePutPreSignedUrl(String filePath, UUID chatRoomId) {
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new EntityNotFoundException("There is no such chat room."));
 
         Metadata metadata = Metadata.builder()
                 .name(filePath)
-                .chatRoom()//TODO
+                .chatRoom(chatRoom)
                 .build();
+
         metadataRepository.save(metadata);
 
         PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filePath);
 
-        if (accessType == AccessType.PUBLIC) {
-            putObjectRequestBuilder.acl(ObjectCannedACL.PUBLIC_READ);
-        }
 
         PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
