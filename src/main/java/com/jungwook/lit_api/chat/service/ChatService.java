@@ -17,7 +17,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.http.SdkHttpMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +80,7 @@ public class ChatService {
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(createGroupRoomReqDto.roomName())
+                .member(sender)
                 .description(createGroupRoomReqDto.description())
                 .category(Category.valueOf(createGroupRoomReqDto.category()))
                 .isGroupChat("Y")
@@ -103,6 +103,8 @@ public class ChatService {
             ChatRoomListResDto dto = ChatRoomListResDto.builder()
                     .roomId(c.getId())
                     .roomName(c.getName())
+                    .roomDescription(c.getDescription())
+                    .roomCategory(c.getCategory())
                     .build();
             dtos.add(dto);
         }

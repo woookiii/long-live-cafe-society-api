@@ -1,5 +1,6 @@
 package com.jungwook.lit_api.chat.dto;
 
+import com.jungwook.lit_api.chat.domain.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class ChatRoomListResDto{
     private UUID roomId;
     private String roomName;
     private String roomDescription;
-    private String category;
+    private Category roomCategory;
 }

@@ -1,6 +1,7 @@
 package com.jungwook.lit_api.image.controller;
 
 import com.jungwook.lit_api.image.service.FileService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import software.amazon.awssdk.http.SdkHttpMethod;
@@ -13,6 +14,7 @@ import static com.jungwook.lit_api.image.service.FileService.buildFilename;
 
 @RestController
 @RequestMapping("/files")
+@Slf4j
 public class FileController {
 
     private final FileService fileService;
@@ -31,9 +33,18 @@ public class FileController {
     public ResponseEntity<Map<String, Object>> generateUrl(
             @RequestParam(name = "filename", required = false, defaultValue = "") String filename,
             @RequestParam(name = "chatRoomId", required = false, defaultValue = "") UUID chatRoomId) {
+        log.info("upload");
         filename = buildFilename(filename);
         String url = fileService.generatePresignedUrl(filename, SdkHttpMethod.PUT, chatRoomId);
         return ResponseEntity.ok(Map.of("url", url, "file", filename));
+    }
+
+    @PostMapping("/save-metadata")
+    public ResponseEntity<?> saveMetadata(
+            @RequestParam(name = "filename", required = false, defaultValue = "") String filename,
+            @RequestParam(name = "chatRoomId", required = false, defaultValue = "") UUID chatRoomId) {
+        fileService.saveMetadata(filename, chatRoomId);
+        return ResponseEntity.ok().build();
     }
 
 

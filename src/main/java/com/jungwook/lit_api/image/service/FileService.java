@@ -4,8 +4,11 @@ import com.jungwook.lit_api.chat.domain.ChatRoom;
 import com.jungwook.lit_api.chat.repository.ChatRoomRepository;
 import com.jungwook.lit_api.image.domain.Metadata;
 import com.jungwook.lit_api.image.repository.MetadataRepository;
+import com.jungwook.lit_api.member.domain.Member;
+import com.jungwook.lit_api.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.http.SdkHttpMethod;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -17,6 +20,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
+import java.nio.file.AccessDeniedException;
 import java.text.Normalizer;
 import java.time.Duration;
 import java.util.Optional;
@@ -25,16 +29,20 @@ import java.util.UUID;
 @Service
 public class FileService {
 
-    private final ChatRoomRepository chatRoomRepository;
     @Value("${aws.bucket}")
     private String bucketName;
 
     private final S3Presigner s3Presigner;
     private final MetadataRepository metadataRepository;
 
-    public FileService(S3Presigner s3Presigner, MetadataRepository metadataRepository, ChatRoomRepository chatRoomRepository) {
+    private final MemberRepository memberRepository;
+    private final ChatRoomRepository chatRoomRepository;
+
+
+    public FileService(S3Presigner s3Presigner, MetadataRepository metadataRepository, MemberRepository memberRepository, ChatRoomRepository chatRoomRepository) {
         this.s3Presigner = s3Presigner;
         this.metadataRepository = metadataRepository;
+        this.memberRepository = memberRepository;
         this.chatRoomRepository = chatRoomRepository;
     }
 
@@ -52,6 +60,7 @@ public class FileService {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new EntityNotFoundException("There is no such chat room."));
 
         Optional<Metadata> metadata = metadataRepository.findByChatRoom(chatRoom);
+        //TODO : metadata is many to one and findByChatRoom and createdTime desc and use recent one
 
         if(metadata.isEmpty()){
             return "/images/logo.png";
@@ -72,20 +81,18 @@ public class FileService {
     }
 
     private String generatePutPreSignedUrl(String filePath, UUID chatRoomId) {
+        Member sender = memberRepository.findById(UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName()))
+                .orElseThrow(()->new EntityNotFoundException("Member cannot be found"));
 
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new EntityNotFoundException("There is no such chat room."));
 
-        Metadata metadata = Metadata.builder()
-                .name(filePath)
-                .chatRoom(chatRoom)
-                .build();
-
-        metadataRepository.save(metadata);
+        if(!chatRoom.getMember().equals(sender)){
+            throw new IllegalArgumentException("You are not the owner of this room.");
+        }
 
         PutObjectRequest.Builder putObjectRequestBuilder = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(filePath);
-
 
         PutObjectRequest putObjectRequest = putObjectRequestBuilder.build();
 
@@ -96,6 +103,18 @@ public class FileService {
 
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
         return presignedRequest.url().toString();
+    }
+
+    public void saveMetadata(String filename, UUID chatRoomId) {
+
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new EntityNotFoundException("There is no such chat room."));
+
+        Metadata metadata = Metadata.builder()
+                .name(filename)
+                .chatRoom(chatRoom)
+                .build();
+
+        metadataRepository.save(metadata);
     }
 
     public static String buildFilename(String filename) {
