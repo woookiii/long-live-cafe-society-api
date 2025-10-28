@@ -45,7 +45,4 @@ public class ChatRoom extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
     private List<ChatMessage> chatMessages = new ArrayList<>();
-
-    @OneToOne(mappedBy = "chatRoom", cascade = CascadeType.REMOVE)
-    private Metadata metadata;
 }

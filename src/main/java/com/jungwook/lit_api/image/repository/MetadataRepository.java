@@ -11,5 +11,5 @@ import java.util.UUID;
 @Repository
 public interface MetadataRepository extends JpaRepository<Metadata, UUID> {
 
-    Optional<Metadata> findByChatRoom(ChatRoom chatRoom);
+    Optional<Metadata> findFirstByChatRoomOrderByCreatedTimeDesc(ChatRoom chatRoom);
 }

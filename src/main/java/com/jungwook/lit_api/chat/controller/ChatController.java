@@ -1,5 +1,6 @@
 package com.jungwook.lit_api.chat.controller;
 
+import com.jungwook.lit_api.chat.domain.Category;
 import com.jungwook.lit_api.chat.dto.ChatMessageDto;
 import com.jungwook.lit_api.chat.dto.ChatRoomListResDto;
 import com.jungwook.lit_api.chat.dto.CreateGroupRoomReqDto;
@@ -36,6 +37,12 @@ public class ChatController {
     public ResponseEntity<?> getGroupChatRooms() {
         log.info("getGroupChatRooms request incoming");
         List<ChatRoomListResDto> chatRooms = chatService.getGroupChatRooms();
+        return new ResponseEntity<>(chatRooms, HttpStatus.OK);
+    }
+
+    @GetMapping("/room/group/list/{category}")
+    public ResponseEntity<?> getCategoryChatRooms(@PathVariable Category category) {
+        List<ChatRoomListResDto> chatRooms = chatService.getCategoryChatRooms(category);
         return new ResponseEntity<>(chatRooms, HttpStatus.OK);
     }
 

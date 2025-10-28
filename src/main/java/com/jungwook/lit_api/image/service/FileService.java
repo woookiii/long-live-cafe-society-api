@@ -59,8 +59,7 @@ public class FileService {
     private String generateGetPresignedUrl(UUID chatRoomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new EntityNotFoundException("There is no such chat room."));
 
-        Optional<Metadata> metadata = metadataRepository.findByChatRoom(chatRoom);
-        //TODO : metadata is many to one and findByChatRoom and createdTime desc and use recent one
+        Optional<Metadata> metadata = metadataRepository.findFirstByChatRoomOrderByCreatedTimeDesc(chatRoom);
 
         if(metadata.isEmpty()){
             return "/images/logo.png";

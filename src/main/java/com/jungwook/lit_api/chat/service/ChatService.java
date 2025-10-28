@@ -98,6 +98,10 @@ public class ChatService {
 
     public List<ChatRoomListResDto> getGroupChatRooms() {
         List<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y");
+        return getChatRoomListResDtos(chatRooms);
+    }
+
+    private List<ChatRoomListResDto> getChatRoomListResDtos(List<ChatRoom> chatRooms) {
         List<ChatRoomListResDto> dtos = new ArrayList<>();
         for(ChatRoom c : chatRooms) {
             ChatRoomListResDto dto = ChatRoomListResDto.builder()
@@ -109,6 +113,13 @@ public class ChatService {
             dtos.add(dto);
         }
         return dtos;
+    }
+
+
+    public List<ChatRoomListResDto> getCategoryChatRooms(Category category) {
+        List<ChatRoom> chatRooms = chatRoomRepository.findByCategoryAndIsGroupChat(category, "Y");
+
+        return getChatRoomListResDtos(chatRooms);
     }
 
     public void addParticipantToGroupChat(UUID roomId) {
@@ -165,4 +176,5 @@ public class ChatService {
 
         return chatMessageDtos;
     }
+
 }

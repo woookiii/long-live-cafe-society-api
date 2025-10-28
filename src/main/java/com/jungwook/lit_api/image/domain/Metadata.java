@@ -24,7 +24,7 @@ public class Metadata extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
     ChatRoom chatRoom;
 }
