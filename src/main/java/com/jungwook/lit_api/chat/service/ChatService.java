@@ -60,21 +60,21 @@ public class ChatService {
 
     public boolean isRoomParticipant(UUID memberId, UUID roomId) {
 
-//        Member member = memberRepository.findById(memberId)
-//                .orElseThrow(() -> new EntityNotFoundException("member cannot be found"));
-//
-//        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-//                .orElseThrow(() -> new EntityNotFoundException("room cannot be found"));
-//
-//        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
-//        for (ChatParticipant c : chatParticipants) {
-//            if(c.getMember().equals(member)){
-//                return true;
-//            }
-//        }
-//        return false;
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("member cannot be found"));
 
-        return true;
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("room cannot be found"));
+
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        for (ChatParticipant c : chatParticipants) {
+            if(c.getMember().getId().equals(member.getId())){
+                log.info("man is chat participant");
+                return true;
+            }
+        }
+        log.info("man is not chat participant");
+        return false;
     }
 
     public void createGroupRoom(CreateGroupRoomReqDto createGroupRoomReqDto) {
@@ -109,7 +109,6 @@ public class ChatService {
     public List<ChatRoomListResDto> getCategoryChatRooms(Category category, Integer page) {
         Pageable pageable = PageRequest.of(page, 5);
         Page<ChatRoom> chatRooms = chatRoomRepository.findByCategoryAndIsGroupChat(category, "Y", pageable);
-
         return getChatRoomListResDtos(chatRooms);
     }
 
@@ -141,7 +140,7 @@ public class ChatService {
         }
 
         Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMember(chatRoom, member);
-        if(!participant.isPresent()) {
+        if(participant.isEmpty()) {
             addParticipantToRoom(chatRoom, member);
         }
     }
