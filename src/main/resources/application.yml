@@ -11,7 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: true
     hibernate:
-      ddl-auto: validate #when foreign key relationship is complicated, validate mode is recommended. update : maintain db data when restart app, so when first time we run app it should be create mode
+      ddl-auto: create #when foreign key relationship is complicated, validate mode is recommended. update : maintain db data when restart app, so when first time we run app it should be create mode
     show_sql: true
   data:
     redis:

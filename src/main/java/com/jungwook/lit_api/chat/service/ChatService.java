@@ -10,6 +10,7 @@ import com.jungwook.lit_api.chat.dto.CreateGroupRoomReqDto;
 import com.jungwook.lit_api.chat.repository.ChatMessageRepository;
 import com.jungwook.lit_api.chat.repository.ChatParticipantRepository;
 import com.jungwook.lit_api.chat.repository.ChatRoomRepository;
+import com.jungwook.lit_api.image.service.FileService;
 import com.jungwook.lit_api.member.domain.Member;
 import com.jungwook.lit_api.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,7 +32,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final MemberRepository memberRepository;
 
-    public ChatService(ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, MemberRepository memberRepository) {
+    public ChatService(FileService fileService, ChatRoomRepository chatRoomRepository, ChatParticipantRepository chatParticipantRepository, ChatMessageRepository chatMessageRepository, MemberRepository memberRepository) {
         this.chatRoomRepository = chatRoomRepository;
         this.chatParticipantRepository = chatParticipantRepository;
         this.chatMessageRepository = chatMessageRepository;
@@ -79,6 +80,7 @@ public class ChatService {
 
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(createGroupRoomReqDto.roomName())
+                .member(sender)
                 .description(createGroupRoomReqDto.description())
                 .category(Category.valueOf(createGroupRoomReqDto.category()))
                 .isGroupChat("Y")
@@ -96,15 +98,28 @@ public class ChatService {
 
     public List<ChatRoomListResDto> getGroupChatRooms() {
         List<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y");
+        return getChatRoomListResDtos(chatRooms);
+    }
+
+    private List<ChatRoomListResDto> getChatRoomListResDtos(List<ChatRoom> chatRooms) {
         List<ChatRoomListResDto> dtos = new ArrayList<>();
         for(ChatRoom c : chatRooms) {
             ChatRoomListResDto dto = ChatRoomListResDto.builder()
                     .roomId(c.getId())
                     .roomName(c.getName())
+                    .roomDescription(c.getDescription())
+                    .roomCategory(c.getCategory())
                     .build();
             dtos.add(dto);
         }
         return dtos;
+    }
+
+
+    public List<ChatRoomListResDto> getCategoryChatRooms(Category category) {
+        List<ChatRoom> chatRooms = chatRoomRepository.findByCategoryAndIsGroupChat(category, "Y");
+
+        return getChatRoomListResDtos(chatRooms);
     }
 
     public void addParticipantToGroupChat(UUID roomId) {
@@ -161,4 +176,5 @@ public class ChatService {
 
         return chatMessageDtos;
     }
+
 }
