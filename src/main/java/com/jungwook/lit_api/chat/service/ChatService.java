@@ -15,6 +15,9 @@ import com.jungwook.lit_api.member.domain.Member;
 import com.jungwook.lit_api.member.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -96,14 +99,23 @@ public class ChatService {
         chatParticipantRepository.save(chatParticipant);
     }
 
-    public List<ChatRoomListResDto> getGroupChatRooms() {
-        List<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y");
+    public List<ChatRoomListResDto> getGroupChatRooms(Integer page) {
+        Pageable pageable = PageRequest.of(page, 5);
+        Page<ChatRoom> chatRooms = chatRoomRepository.findByIsGroupChat("Y", pageable);
         return getChatRoomListResDtos(chatRooms);
     }
 
-    private List<ChatRoomListResDto> getChatRoomListResDtos(List<ChatRoom> chatRooms) {
+
+    public List<ChatRoomListResDto> getCategoryChatRooms(Category category, Integer page) {
+        Pageable pageable = PageRequest.of(page, 5);
+        Page<ChatRoom> chatRooms = chatRoomRepository.findByCategoryAndIsGroupChat(category, "Y", pageable);
+
+        return getChatRoomListResDtos(chatRooms);
+    }
+
+    private List<ChatRoomListResDto> getChatRoomListResDtos(Page<ChatRoom> chatRooms) {
         List<ChatRoomListResDto> dtos = new ArrayList<>();
-        for(ChatRoom c : chatRooms) {
+        for(ChatRoom c : chatRooms.getContent()) {
             ChatRoomListResDto dto = ChatRoomListResDto.builder()
                     .roomId(c.getId())
                     .roomName(c.getName())
@@ -116,11 +128,6 @@ public class ChatService {
     }
 
 
-    public List<ChatRoomListResDto> getCategoryChatRooms(Category category) {
-        List<ChatRoom> chatRooms = chatRoomRepository.findByCategoryAndIsGroupChat(category, "Y");
-
-        return getChatRoomListResDtos(chatRooms);
-    }
 
     public void addParticipantToGroupChat(UUID roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)

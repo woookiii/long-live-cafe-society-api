@@ -33,16 +33,16 @@ public class ChatController {
     }
 
     //select group chat list
-    @GetMapping("/room/group/list")
-    public ResponseEntity<?> getGroupChatRooms() {
+    @GetMapping("/room/group/list/{page}")
+    public ResponseEntity<?> getGroupChatRooms(@PathVariable Integer page) {
         log.info("getGroupChatRooms request incoming");
-        List<ChatRoomListResDto> chatRooms = chatService.getGroupChatRooms();
+        List<ChatRoomListResDto> chatRooms = chatService.getGroupChatRooms(page);
         return new ResponseEntity<>(chatRooms, HttpStatus.OK);
     }
 
-    @GetMapping("/room/group/list/{category}")
-    public ResponseEntity<?> getCategoryChatRooms(@PathVariable Category category) {
-        List<ChatRoomListResDto> chatRooms = chatService.getCategoryChatRooms(category);
+    @GetMapping("/room/group/list/{category}/{page}")
+    public ResponseEntity<?> getCategoryChatRooms(@PathVariable Category category, @PathVariable Integer page) {
+        List<ChatRoomListResDto> chatRooms = chatService.getCategoryChatRooms(category, page);
         return new ResponseEntity<>(chatRooms, HttpStatus.OK);
     }
 
